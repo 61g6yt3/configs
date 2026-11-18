@@ -1,0 +1,85 @@
+port: 7890
+socks-port: 7891
+allow-lan: false
+mode: rule
+log-level: info
+external-controller: 127.0.0.1:9090
+
+proxies:
+  # Узел 1: VLESS + REALITY (TCP)
+  - name: "VLESS-Reality-1"
+    type: vless
+    server: free.fugui.lol
+    port: 47396
+    uuid: ead3595f-4020-4e76-a3ec-c248e1a2f2f7
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: swdist.apple.com
+    client-fingerprint: chrome
+    reality-opts:
+      public-key: IjWYbHNrZb3UCQxsTJyekEOA3tHq42L6Jw3O8MmLYVQ
+      short-id: fa514b83
+
+  # Узел 2: VLESS + REALITY + XHTTP
+  # ВНИМАНИЕ: Транспорт "xhttp" не поддерживается в Clash Meta. 
+  # Использована эмуляция через "http", работоспособность не гарантируется!
+  - name: "VLESS-Reality-2-XHTTP"
+    type: vless
+    server: 191.217.206.147
+    port: 6443
+    uuid: 67864856-8730-40cc-9e1a-a0df697d912b
+    network: http
+    tls: true
+    udp: true
+    servername: nl.krabvpn.pro
+    client-fingerprint: firefox
+    reality-opts:
+      public-key: RBQhVV7u-QBkQL79vHRE2tQEeR1SA8CJ9zI9i99XA24
+      short-id: 3bcbfe3856680516
+    http-opts:
+      method: "GET"
+      path:
+        - "/assets/e19f8e871ca55b3d77d42ae7"
+      headers:
+        Host:
+          - "nl.krabvpn.pro"
+
+  # Узел 3: Shadowsocks (Стандартный, полная совместимость)
+  - name: "Shadowsocks-AES"
+    type: ss
+    server: jpa.123069.xyz
+    port: 53758
+    cipher: aes-128-gcm
+    password: Bwlqh7GcFB
+    udp: true
+
+  # Узел 4: VLESS + TLS + WebSocket
+  # ВНИМАНИЕ: Кастомное шифрование заменено на "none". flow удален, так как несовместим с WS.
+  - name: "VLESS-TLS-WS"
+    type: vless
+    server: perplexity.com
+    port: 443
+    uuid: f7a9b27c-fd3c-4177-9f66-8be4dd726d0b
+    network: ws
+    tls: true
+    udp: true
+    servername: rainman.exploring.cyou
+    client-fingerprint: chrome
+    ws-opts:
+      path: "/t.me-SubGift"
+      headers:
+        Host: "rainman.exploring.cyou"
+
+proxy-groups:
+  - name: "PROXY"
+    type: select
+    proxies:
+      - "VLESS-Reality-1"
+      - "VLESS-Reality-2-XHTTP"
+      - "Shadowsocks-AES"
+      - "VLESS-TLS-WS"
+
+rules:
+  - MATCH,PROXY
